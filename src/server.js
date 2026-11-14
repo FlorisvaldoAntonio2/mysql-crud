@@ -1,29 +1,41 @@
+import 'dotenv/config';
 import express from 'express';
 import mysql from 'mysql2/promise';
 
 const app = express();
-const port = 3000;
+const port = process.env.SERVER_PORT;
 
 app.use(express.json());
 
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'root',
-    database: 'usuarios',
-    port: 3333,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 });
 
 app.get('/users', async (req, res) => {
-    const [rows] = await pool.query('SELECT * FROM users;');
+    try{
+        const [rows] = await pool.query('SELECT * FROM users;');
 
-    return res.status(200).json({
-        message: "Usuários recuperados com sucesso!",
-        data: rows
-    })
+        return res.status(200).json({
+            message: "Usuários recuperados com sucesso!",
+            data: rows
+        })
+    }
+    catch(error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Erro no servidor, tente novamente!"
+        })
+    }
+    finally {
+        console.log("Teste")
+    }
 });
 
 app.post('/users', async (req,res) => {
